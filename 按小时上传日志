@@ -7,6 +7,7 @@ cd /usr/local/ppcache/logs/
 rm -rf access.log_800
 HOUT=`date +%Y/%m/%d`;
 Hour=`date +%H`
+#问题主要出在时间处理上，在小时被减1后，小于10的数字，变成了一位，与日志不符，后来只能再加一次判断。
 if [ $Hour -eq 0 ];then
         Hour=23
         HOUT=`date -d yesterday +%Y/%m/%d`;
