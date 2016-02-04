@@ -1,0 +1,34 @@
+#!/bin/sh 
+export PATH=/usr/bin:/bin:/sbin:/usr/sbin:/usr/local/bin
+DATE=$(date +%Y%m%d)
+ROUTE=`route | grep default | awk '{print $8}'`
+USER_IP=`ifconfig $ROUTE | grep 'Bcast:'| cut -f2 -d:|awk '{print $1}'`
+cd /usr/local/ppcache/logs/
+rm -rf access.log_800
+HOUT=`date +%Y/%m/%d`;
+Hour=`date +%H`
+if [ $Hour -eq 0 ];then
+        Hour=23
+        HOUT=`date -d yesterday +%Y/%m/%d`;
+else
+        Hour=`expr $Hour - 1`
+        if [ $Hour -lt 10 ];then
+                Hour=0$Hour
+        fi
+fi
+grep "${HOUT}\ ${Hour}:" access.log_8* >access.log;
+mv access.log $DATE-$Hour-$USER_IP.access.log_80.0
+touch $DATE-$Hour-$USER_IP.ok
+ftp -n<<!
+open 172.29.46.59 
+user cacheftp pl,12345 
+binary
+hash
+cd /192.168.194.186
+prompt
+mput $DATE-$Hour-$USER_IP.access.log_80.0
+close
+bye
+!
+cd /usr/local/ppcach/logs/
+rm -rf $DATE-$Hour-$USER_IP.access.log_80.0
